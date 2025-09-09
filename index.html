@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>17Ring-JS Store - Best Affiliate Deals</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; }
+        .gradient-text { background: linear-gradient(45deg, #007bff, #00d4ff, #ee82ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; font-weight: 700 !important; }
+        .hero-section { background-image: linear-gradient(to top, #020024, #090979, #00d4ff); color: white; padding: 70px 20px; text-align: center; }
+        .main-layout { display: grid; grid-template-columns: 250px 1fr; gap: 2rem; }
+        #category-sidebar { background: #fff; padding: 1.5rem; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: fit-content; position: sticky; top: 80px; border: 1px solid #e9ecef; }
+        .category-link { display: block; padding: 10px 15px; margin-bottom: 5px; border-radius: 8px; text-decoration: none; color: #333; font-weight: 600; transition: background-color 0.3s, color 0.3s; }
+        .category-link:hover { background-color: #f0f0f0; }
+        .category-link.active { background-color: #0d6efd; color: #fff; }
+        @media (max-width: 992px) { .main-layout { grid-template-columns: 1fr; } #category-sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 280px; transform: translateX(-100%); transition: transform 0.3s ease-in-out; z-index: 1045; overflow-y: auto; } #category-sidebar.show { transform: translateX(0); } .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1040; display: none; } .sidebar-overlay.show { display: block; } }
+        .product-card { border: none; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .product-card:hover { transform: translateY(-10px); }
+        .card-img-top { border-top-left-radius: 15px; border-top-right-radius: 15px; height: 220px; object-fit: cover; }
+        .loader { border: 8px solid #f3f3f3; border-radius: 50%; border-top: 8px solid #0d6efd; width: 60px; height: 60px; animation: spin 1.5s linear infinite; margin: 50px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .footer { background-color: #212529; color: white; padding: 30px 0; }
+        .price-container { margin-top: auto; padding-top:10px; }
+        .price-final { font-size: 1.75rem; font-weight: 700; color: #212529; }
+        .price-mrp { color: #6c757d; text-decoration: line-through; margin-left: 10px; }
+        .price-discount { color: #dc3545; font-weight: 600; margin-left: 10px; font-size: 1.2rem; }
+        .main-category-filters { text-align: center; margin-bottom: 2.5rem; }
+        .main-category-chip { border: 1px solid #ddd; border-radius: 20px; padding: 8px 20px; margin: 5px; background-color: #fff; font-weight: 600; transition: all 0.3s; }
+        .main-category-chip.active, .main-category-chip:hover { background-color: #0d6efd; color: #fff; border-color: #0d6efd; }
+        .social-icons a { color: #f8f9fa; font-size: 1.5rem; margin: 0 10px; transition: color 0.3s, transform 0.3s; display: inline-block; }
+        .social-icons a:hover { color: #0d6efd; transform: translateY(-3px); }
+
+        /* >>>>> NAYA: Sidebar mein social icons ke liye CSS <<<<< */
+        .sidebar-socials { margin-top: 1.5rem; }
+        .sidebar-socials a { color: #6c757d; font-size: 1.5rem; margin: 0 8px; transition: color 0.3s; }
+        .sidebar-socials a:hover { color: #0d6efd; }
+    </style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm"><div class="container"><button class="navbar-toggler d-lg-none" type="button" id="sidebar-toggle-btn"><span class="navbar-toggler-icon"></span></button><a class="navbar-brand gradient-text fs-4" href="#">17Ring-JS Store</a></div></nav>
+    <header class="hero-section"><div class="container"><h1>Best Products, Honest Reviews</h1><p class="lead">We pick the best products from Amazon, just for you!</p><a href="#products-section" class="btn btn-light btn-lg mt-3 fw-bold" id="shop-now-btn">Shop Now</a></div></header>
+    <div class="container my-5"><div class="main-layout">
+        <aside id="category-sidebar">
+            <h4 class="mb-3">Categories</h4>
+            <div id="sidebar-category-list"></div>
+            
+            <!-- >>>>> NAYA: Sidebar mein Social Icons ka Section <<<<< -->
+            <hr class="my-3">
+            <h5 class="mb-3 text-center">Follow Us</h5>
+            <div class="text-center sidebar-socials" id="sidebar-social-icons">
+                <!-- Sidebar Social Icons will be loaded here -->
+            </div>
+        </aside>
+        <main id="products-section"><h2 class="text-center mb-4">Our Products</h2><div id="main-category-filters" class="main-category-filters"></div><form class="search-form mb-5" onsubmit="return false;"><i class="bi bi-search" style="position: absolute; top: 15px; left: 15px; color: #6c757d;"></i><input type="search" id="search-input" class="form-control" style="height: 50px; border-radius: 10px; border: 1px solid #ddd; padding-left: 45px;" placeholder="Search for products..."></form><div id="product-list" class="row"><div class="loader"></div></div></main></div></div>
+    
+    <footer class="footer text-center">
+        <div id="social-icons-container" class="social-icons mb-3"></div>
+        <p>&copy; 2025 17Ring-JS Store. All Rights Reserved.</p>
+        <p class="mb-0"><small>As an Amazon Associate, I earn from qualifying purchases.</small></p>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyABu3fhCS6vqRkyKgCbTt7SS6ujtavdwCI", authDomain: "admin-panel-3b889.firebaseapp.com", databaseURL: "https://admin-panel-3b889-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "admin-panel-3b889", storageBucket: "admin-panel-3b889.appspot.com", messagingSenderId: "487073865388", appId: "1:487073865388:web:5980b372fe289c930e8909" };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        let allProducts = {};
+
+        // >>>>> BADLAV: Social Links ab dono jagah dikhenge <<<<<
+        database.ref('socialLinks').on('value', (snapshot) => {
+            const links = snapshot.val();
+            const footerContainer = document.getElementById('social-icons-container');
+            const sidebarContainer = document.getElementById('sidebar-social-icons');
+            
+            let iconsHtml = '';
+            if (links) {
+                if (links.facebook) iconsHtml += `<a href="${links.facebook}" target="_blank" title="Facebook"><i class="bi bi-facebook"></i></a>`;
+                if (links.instagram) iconsHtml += `<a href="${links.instagram}" target="_blank" title="Instagram"><i class="bi bi-instagram"></i></a>`;
+                if (links.telegram) iconsHtml += `<a href="${links.telegram}" target="_blank" title="Telegram"><i class="bi bi-telegram"></i></a>`;
+            }
+            
+            footerContainer.innerHTML = iconsHtml;
+            sidebarContainer.innerHTML = iconsHtml;
+        });
+
+        // Baaki ka JavaScript (Product Display, Category, Search, etc. - No Change)
+        const displayProducts = (products) => { const list = document.getElementById('product-list'); list.innerHTML = ''; if (products && Object.keys(products).length > 0) { const keys = Object.keys(products).reverse(); for (const key of keys) { const p = products[key]; let priceHtml = ''; if (p.mrp && p.price && p.mrp > p.price) { const discount = Math.round(((p.mrp - p.price) / p.mrp) * 100); priceHtml = `<div class="price-container"><span class="price-discount">-${discount}%</span> <span class="price-final">₹${p.price.toLocaleString('en-IN')}</span> <span class="price-mrp">M.R.P.: ₹${p.mrp.toLocaleString('en-IN')}</span></div>`; } else if (p.price) { priceHtml = `<div class="price-container"><span class="price-final">₹${p.price.toLocaleString('en-IN')}</span></div>`; } list.innerHTML += `<div class="col-lg-4 col-md-6 mb-4 card-fade-in"><div class="card h-100 product-card"><img src="${p.imageUrl}" class="card-img-top" alt="${p.name}"><div class="card-body d-flex flex-column"><h5 class="card-title">${p.name}</h5><p class="card-text text-muted small">${p.description}</p>${priceHtml}<a href="${p.link}" target="_blank" class="btn btn-warning mt-auto fw-bold buy-button">Buy on Amazon</a></div></div></div>`; } } else { list.innerHTML = `<div class="text-center w-100"><p class="text-danger fs-5">No products found matching your criteria.</p></div>`; } };
+        window.filterProducts = (category) => { document.querySelectorAll('[data-category]').forEach(el => el.classList.remove('active')); document.querySelectorAll(`[data-category="${category}"]`).forEach(el => el.classList.add('active')); document.getElementById('search-input').value = ''; displayProducts(category === 'All' ? allProducts : Object.fromEntries(Object.entries(allProducts).filter(([k, v]) => v.category === category))); sidebar.classList.remove('show'); overlay.classList.remove('show'); };
+        database.ref('categories').on('value', (snapshot) => { const sidebarList = document.getElementById('sidebar-category-list'); const mainFilters = document.getElementById('main-category-filters'); sidebarList.innerHTML = `<a href="#" class="category-link" data-category="All" onclick="filterProducts('All')">All Categories</a>`; mainFilters.innerHTML = `<button class="main-category-chip" data-category="All" onclick="filterProducts('All')">All</button>`; const cats = snapshot.val(); if (cats) { for (const key in cats) { const cat = cats[key]; sidebarList.innerHTML += `<a href="#" class="category-link" data-category="${cat.name}" onclick="filterProducts('${cat.name}')">${cat.name}</a>`; mainFilters.innerHTML += `<button class="main-category-chip" data-category="${cat.name}" onclick="filterProducts('${cat.name}')">${cat.name}</button>`; } } });
+        database.ref('products').on('value', (snapshot) => { allProducts = snapshot.val() || {}; filterProducts('All'); });
+        document.getElementById('search-input').addEventListener('input', (e) => { const searchTerm = e.target.value.toLowerCase(); const activeCategory = document.querySelector('.main-category-chip.active').dataset.category; let productsToSearch = activeCategory === 'All' ? allProducts : Object.fromEntries(Object.entries(allProducts).filter(([k, v]) => v.category === activeCategory)); if (!searchTerm) { displayProducts(productsToSearch); return; } const filteredProducts = Object.fromEntries(Object.entries(productsToSearch).filter(([key, product]) => product.name.toLowerCase().includes(searchTerm) || product.description.toLowerCase().includes(searchTerm))); displayProducts(filteredProducts); });
+        const sidebar = document.getElementById('category-sidebar'); const overlay = document.getElementById('sidebar-overlay'); const toggleBtn = document.getElementById('sidebar-toggle-btn'); toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.toggle('show'); overlay.classList.toggle('show'); }); overlay.addEventListener('click', () => { sidebar.classList.remove('show'); overlay.classList.remove('show'); });
+        document.getElementById('shop-now-btn').addEventListener('click', (e) => { e.preventDefault(); document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' }); });
+    </script>
+</body>
+</html>
