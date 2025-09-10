@@ -13,7 +13,7 @@
         body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; }
         .gradient-text { background: linear-gradient(45deg, #007bff, #00d4ff, #ee82ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; font-weight: 700 !important; }
         .main-layout { display: grid; grid-template-columns: 250px 1fr; gap: 2rem; }
-        #category-sidebar { background: #fff; padding: 1.5rem; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: fit-content; position: sticky; top: 80px; border: 1px solid #e9ecef; }
+        #category-sidebar { background: #fff; padding: 1.5rem; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: fit-content; position: sticky; top: 20px; border: 1px solid #e9ecef; }
         .category-link { display: block; padding: 10px 15px; margin-bottom: 5px; border-radius: 8px; text-decoration: none; color: #333; font-weight: 600; transition: background-color 0.3s, color 0.3s; }
         .category-link:hover { background-color: #f0f0f0; }
         .category-link.active { background-color: #0d6efd; color: #fff; }
@@ -36,18 +36,14 @@
         .sidebar-socials { margin-top: 1.5rem; }
         .sidebar-socials a { color: #6c757d; font-size: 1.5rem; margin: 0 8px; transition: color 0.3s; }
         .sidebar-socials a:hover { color: #0d6efd; }
+        .banner-title { font-weight: 600; font-size: 1.5rem; margin-top: 1rem; }
     </style>
 </head>
 <body>
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm"><div class="container"><button class="navbar-toggler d-lg-none" type="button" id="sidebar-toggle-btn"><span class="navbar-toggler-icon"></span></button><a class="navbar-brand gradient-text fs-4" href="#">17Ring-JS Store</a></div></nav>
     
-    <!-- >>>>> NAYA SECTION: Yahan par aapka banner lagega <<<<< -->
-    <div class="container my-3 my-md-4">
-        <a href="https://amzn.to/4n1JjCE" target="_blank">
-            <img src="https://i.postimg.cc/0NDX6fks/Diwali.jpg" class="img-fluid rounded shadow-sm" alt="Diwali Special Sale Banner">
-        </a>
-    </div>
+    <div id="banner-container" class="container my-3 my-md-4 text-center"></div>
 
     <div class="container my-5"><div class="main-layout"><aside id="category-sidebar"><h4 class="mb-3">Categories</h4><div id="sidebar-category-list"></div><hr class="my-3"><h5 class="mb-3 text-center">Follow Us</h5><div class="text-center sidebar-socials" id="sidebar-social-icons"></div></aside><main id="products-section"><h2 class="text-center mb-4">Our Products</h2><div id="main-category-filters" class="main-category-filters"></div><form class="search-form mb-5" onsubmit="return false;"><i class="bi bi-search" style="position: absolute; top: 15px; left: 15px; color: #6c757d;"></i><input type="search" id="search-input" class="form-control" style="height: 50px; border-radius: 10px; border: 1px solid #ddd; padding-left: 45px;" placeholder="Search for products..."></form><div id="product-list" class="row"><div class="loader"></div></div></main></div></div>
     
@@ -61,6 +57,7 @@
         const database = firebase.database();
         let allProducts = {};
 
+        database.ref('mainBanner').on('value', (snapshot) => { const bannerData = snapshot.val(); const container = document.getElementById('banner-container'); container.innerHTML = ''; if (bannerData && bannerData.imageUrl && bannerData.affiliateLink) { let bannerHtml = `<a href="${bannerData.affiliateLink}" target="_blank"><img src="${bannerData.imageUrl}" class="img-fluid rounded shadow-sm" alt="Special Sale Banner"></a>`; if (bannerData.title) { bannerHtml += `<h2 class="banner-title">${bannerData.title}</h2>`; } container.innerHTML = bannerHtml; } });
         database.ref('socialLinks').on('value', (snapshot) => { const links = snapshot.val(); const footerContainer = document.getElementById('social-icons-container'); const sidebarContainer = document.getElementById('sidebar-social-icons'); let iconsHtml = ''; if (links) { if (links.facebook) iconsHtml += `<a href="${links.facebook}" target="_blank" title="Facebook"><i class="bi bi-facebook"></i></a>`; if (links.instagram) iconsHtml += `<a href="${links.instagram}" target="_blank" title="Instagram"><i class="bi bi-instagram"></i></a>`; if (links.telegram) iconsHtml += `<a href="${links.telegram}" target="_blank" title="Telegram"><i class="bi bi-telegram"></i></a>`; } footerContainer.innerHTML = iconsHtml; sidebarContainer.innerHTML = iconsHtml; });
         const displayProducts = (products) => { const list = document.getElementById('product-list'); list.innerHTML = ''; if (products && Object.keys(products).length > 0) { const keys = Object.keys(products).reverse(); for (const key of keys) { const p = products[key]; let priceHtml = ''; if (p.mrp && p.price && p.mrp > p.price) { const discount = Math.round(((p.mrp - p.price) / p.mrp) * 100); priceHtml = `<div class="price-container"><span class="price-discount">-${discount}%</span> <span class="price-final">₹${p.price.toLocaleString('en-IN')}</span> <span class="price-mrp">M.R.P.: ₹${p.mrp.toLocaleString('en-IN')}</span></div>`; } else if (p.price) { priceHtml = `<div class="price-container"><span class="price-final">₹${p.price.toLocaleString('en-IN')}</span></div>`; } list.innerHTML += `<div class="col-lg-4 col-md-6 mb-4 card-fade-in"><div class="card h-100 product-card"><img src="${p.imageUrl}" class="card-img-top" alt="${p.name}"><div class="card-body d-flex flex-column"><h5 class="card-title">${p.name}</h5><p class="card-text text-muted small">${p.description}</p>${priceHtml}<a href="${p.link}" target="_blank" class="btn btn-warning mt-auto fw-bold buy-button">Buy on Amazon</a></div></div></div>`; } } else { list.innerHTML = `<div class="text-center w-100"><p class="text-danger fs-5">No products found matching your criteria.</p></div>`; } };
         window.filterProducts = (category) => { document.querySelectorAll('[data-category]').forEach(el => el.classList.remove('active')); document.querySelectorAll(`[data-category="${category}"]`).forEach(el => el.classList.add('active')); document.getElementById('search-input').value = ''; displayProducts(category === 'All' ? allProducts : Object.fromEntries(Object.entries(allProducts).filter(([k, v]) => v.category === category))); sidebar.classList.remove('show'); overlay.classList.remove('show'); };

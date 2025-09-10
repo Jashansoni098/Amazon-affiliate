@@ -38,7 +38,7 @@
                     <div class="card p-3 my-4 shadow-sm"><h2 class="mb-3">Manage Existing Products</h2><div class="table-responsive"><table class="table table-striped table-hover"><thead><tr><th>Product Name</th><th>Category</th><th class="text-end">Actions</th></tr></thead><tbody id="existing-products-table"></tbody></table></div></div>
                 </div>
 
-                <!-- Right Column for Categories and Social Links -->
+                <!-- Right Column for Categories, Banner, and Social Links -->
                 <div class="col-lg-4">
                     <div class="card p-3 my-4 shadow-sm">
                         <h2 id="category-form-title" class="mb-3">Add Category</h2>
@@ -46,6 +46,15 @@
                         <hr>
                         <h5>Existing Categories:</h5>
                         <ul id="categoryList" class="list-group"></ul>
+                    </div>
+                    <div class="card p-3 my-4 shadow-sm">
+                        <h2 class="mb-3">Manage Main Banner</h2>
+                        <form id="bannerForm">
+                            <div class="mb-3"><label class="form-label">Banner Image URL</label><input type="url" id="bannerImageUrl" class="form-control" placeholder="https://.../banner.jpg" required></div>
+                            <div class="mb-3"><label class="form-label">Banner Affiliate Link</label><input type="url" id="bannerAffiliateLink" class="form-control" placeholder="amzn.to/..." required></div>
+                            <div class="mb-3"><label class="form-label">Optional Title</label><input type="text" id="bannerTitle" class="form-control" placeholder="e.g., Diwali Dhamaka Sale!"></div>
+                            <button type="submit" class="btn btn-primary w-100">Save Banner</button>
+                        </form>
                     </div>
                     <div class="card p-3 my-4 shadow-sm">
                         <h2 class="mb-3">Manage Social Links</h2>
@@ -74,14 +83,16 @@
         const loginSection = document.getElementById('login-section'), adminPanelSection = document.getElementById('admin-panel-section'), loginForm = document.getElementById('loginForm'), logoutButton = document.getElementById('logout-button'), loginError = document.getElementById('loginError');
 
         const loadSocialLinks = () => { database.ref('socialLinks').once('value').then(snapshot => { const links = snapshot.val(); if (links) { document.getElementById('facebookLink').value = links.facebook || ''; document.getElementById('instagramLink').value = links.instagram || ''; document.getElementById('telegramLink').value = links.telegram || ''; } }); };
+        const loadBannerData = () => { database.ref('mainBanner').once('value').then(snapshot => { const data = snapshot.val(); if (data) { document.getElementById('bannerImageUrl').value = data.imageUrl || ''; document.getElementById('bannerAffiliateLink').value = data.affiliateLink || ''; document.getElementById('bannerTitle').value = data.title || ''; } }); };
         const loadCategories = () => { const catRef = database.ref('categories'); catRef.on('value', (snapshot) => { allAdminCategories = snapshot.val() || {}; const catList = document.getElementById('categoryList'); const prodCatSelect = document.getElementById('product_category'); catList.innerHTML = ''; prodCatSelect.innerHTML = '<option value="">Select a Category</option>'; for (const key in allAdminCategories) { const c = allAdminCategories[key]; const li = document.createElement('li'); li.className = 'list-group-item d-flex justify-content-between align-items-center'; li.innerHTML = `<span>${c.name}</span><div><button class="btn btn-sm btn-info me-2" onclick="editCategory('${key}')"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-danger" onclick="deleteCategory('${key}')"><i class="bi bi-trash"></i></button></div>`; catList.appendChild(li); const opt = document.createElement('option'); opt.value = c.name; opt.textContent = c.name; prodCatSelect.appendChild(opt); } }); };
         const loadProductsForAdmin = () => { database.ref('products').on('value', snapshot => { allAdminProducts = snapshot.val() || {}; const tableBody = document.getElementById('existing-products-table'); tableBody.innerHTML = ''; const productKeys = Object.keys(allAdminProducts).reverse(); for (const key of productKeys) { const p = allAdminProducts[key]; tableBody.innerHTML += `<tr><td>${p.name}</td><td>${p.category}</td><td class="text-end"><button class="btn btn-sm btn-info me-2" onclick="editProduct('${key}')"><i class="bi bi-pencil-square"></i></button><button class="btn btn-sm btn-danger" onclick="deleteProduct('${key}')"><i class="bi bi-trash"></i></button></td></tr>`; } }); };
         
-        auth.onAuthStateChanged(user => { if (user) { loginSection.style.display = 'none'; adminPanelSection.style.display = 'block'; loadCategories(); loadProductsForAdmin(); loadSocialLinks(); } else { loginSection.style.display = 'flex'; adminPanelSection.style.display = 'none'; } });
+        auth.onAuthStateChanged(user => { if (user) { loginSection.style.display = 'none'; adminPanelSection.style.display = 'block'; loadCategories(); loadProductsForAdmin(); loadSocialLinks(); loadBannerData(); } else { loginSection.style.display = 'flex'; adminPanelSection.style.display = 'none'; } });
         loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('email').value, password = document.getElementById('password').value; loginError.textContent = ''; auth.signInWithEmailAndPassword(email, password).catch(err => loginError.textContent = err.message); });
         logoutButton.addEventListener('click', () => auth.signOut());
         
         document.getElementById('socialLinksForm').addEventListener('submit', (e) => { e.preventDefault(); const linksData = { facebook: document.getElementById('facebookLink').value, instagram: document.getElementById('instagramLink').value, telegram: document.getElementById('telegramLink').value }; database.ref('socialLinks').set(linksData).then(() => alert('Social links saved!')).catch(err => alert(err.message)); });
+        document.getElementById('bannerForm').addEventListener('submit', (e) => { e.preventDefault(); const bannerData = { imageUrl: document.getElementById('bannerImageUrl').value, affiliateLink: document.getElementById('bannerAffiliateLink').value, title: document.getElementById('bannerTitle').value }; database.ref('mainBanner').set(bannerData).then(() => alert('Banner updated successfully!')).catch(err => alert(err.message)); });
         
         window.editCategory = (key) => { const cat = allAdminCategories[key]; document.getElementById('editCategoryKey').value = key; document.getElementById('category_name').value = cat.name; document.getElementById('category-form-title').innerText = 'Edit Category'; document.getElementById('category-submit-btn').innerText = 'Update Category'; document.getElementById('category-cancel-edit-btn').classList.remove('d-none'); };
         window.deleteCategory = (key) => { const cat = allAdminCategories[key]; if (confirm(`Are you sure you want to delete the category "${cat.name}"? This will NOT delete products in it.`)) { database.ref('categories/' + key).remove().then(() => alert('Category deleted!')).catch(err => alert(err.message)); } };
